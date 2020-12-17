@@ -173,7 +173,9 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     }
     
     public String getRealName(String alternativeName) {
-        return alternativeNames.get(alternativeName);
+        if (alternativeName == null)
+            return null;
+        return alternativeNames.get(alternativeName.toLowerCase());
     }
     
     public Map<String, Feature> getFeatures() {

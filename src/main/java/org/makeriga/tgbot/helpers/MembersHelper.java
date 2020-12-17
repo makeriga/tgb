@@ -58,8 +58,6 @@ public class MembersHelper {
         // andis m. => @Aa
         // andis m  => @Aa
         for (String alt : doorToMemberMappings.keySet()) {
-            if ("Reinis V.".equals(alt))
-                System.err.println("");
             String a = alt.toLowerCase();
             if (!memberAlternativeNames.containsKey(a))
                 memberAlternativeNames.put(a, doorToMemberMappings.get(alt));
