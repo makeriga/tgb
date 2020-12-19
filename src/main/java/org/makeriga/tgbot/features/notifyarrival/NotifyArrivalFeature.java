@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
+import org.makeriga.tgbot.features.occupants.OccupantsFeature;
 
 public class NotifyArrivalFeature extends Feature {
     
@@ -27,7 +28,9 @@ public class NotifyArrivalFeature extends Feature {
     private static final String PARDON__Q = "Pardon?";
     
     private final Map<Integer, ArrivalNotification> items = new ConcurrentHashMap<>();
-    private Map<Integer, Long> expireDates = new ConcurrentHashMap<>();
+    private final Map<Integer, Long> expireDates = new ConcurrentHashMap<>();
+    
+    private OccupantsFeature occupantsFeature = null;
     
     public NotifyArrivalFeature(MakeRigaTgBot bot, Settings settings) {
         super(bot, settings);
@@ -39,6 +42,9 @@ public class NotifyArrivalFeature extends Feature {
         
         // commands descriptions
         AddPublicCommandDescription(CMD__NOTIFY_ARRIVAL, "notify about your arrival (private only)");
+        
+        // reference occupants feature
+        occupantsFeature = getBot().getFeatures().containsKey(OccupantsFeature.FEATURE_ID) ? (OccupantsFeature)getBot().getFeatures().get(OccupantsFeature.FEATURE_ID) : null;
     }
     
     @Override
@@ -50,18 +56,18 @@ public class NotifyArrivalFeature extends Feature {
         
         if (isPrivateMessage && CMD__NOTIFY_ARRIVAL.equals(text)) {
             createForm(senderId, senderTitle);
-            ProcessArrivalNotification(chatId, senderId, text);
+            ProcessArrivalNotification(chatId, senderId, text, senderTitle);
             return true;
         }
         
         if (isPrivateMessage) {
-            return ProcessArrivalNotification(chatId, senderId, text);
+            return ProcessArrivalNotification(chatId, senderId, text, senderTitle);
         }
         
         return false;
     }
     
-    private boolean ProcessArrivalNotification(String chatId, Integer userId, String text) {
+    private boolean ProcessArrivalNotification(String chatId, Integer userId, String text, String senderTitle) {
         ArrivalNotification not = items.get(userId);
         if (not == null)
             return false;
@@ -168,6 +174,10 @@ public class NotifyArrivalFeature extends Feature {
                     }
                     // send
                     sendPublicMessage(not.toString());
+                    
+                    if (occupantsFeature != null)
+                        occupantsFeature.RegisterArrival(not.arrivalDate, not.leaveDate, not.extraMembers, senderTitle);
+                    
                     removeForm(userId);
                     return true;
                 } catch (Exception t) {

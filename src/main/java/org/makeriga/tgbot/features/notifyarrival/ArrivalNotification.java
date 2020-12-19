@@ -23,14 +23,17 @@ public class ArrivalNotification {
     public int step = STEP__AFTER_HOURS_Q;
     public int extraMembers;
     
+    public Date arrivalDate = null;
+    public Date leaveDate = null;
+    
     @Override
     public String toString() {
         Calendar c = Calendar.getInstance();
         c.setTime(referenceDate);
         c.add(Calendar.MINUTE, arrivalAfterMinutes);
-        Date arrivalDate = c.getTime();
+        arrivalDate = c.getTime();
         c.add(Calendar.MINUTE, stayMinutes);
-        Date leaveDate = c.getTime();
+        leaveDate = c.getTime();
         String announcementPreffixFormat = "%s announces their arrival - ";
         String extraText = extraMembers > 0 ? " Extra " + extraMembers + " pers. will come." : "";
         if (sameDates(arrivalDate, leaveDate, referenceDate))
@@ -39,7 +42,7 @@ public class ArrivalNotification {
         return String.format(announcementPreffixFormat + "will arrive at %s; will stay until %s.", memberName, Settings.DTF__TEXT.format(arrivalDate), Settings.DTF__TEXT.format(leaveDate)) + extraText;
     }
     
-    private boolean sameDates(Date... dates) {
+    public static boolean sameDates(Date... dates) {
         if (dates == null)
             return false;
         if (dates.length < 2)
