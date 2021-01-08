@@ -1,5 +1,5 @@
-/target/
+target/
 tgb.log*
-/votes/
+votes/
 features/ping/ping.so
-
+features/occupants/current

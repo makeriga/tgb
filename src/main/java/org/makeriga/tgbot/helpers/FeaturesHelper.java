@@ -23,6 +23,7 @@ public class FeaturesHelper {
             Constructor constructor = c.getConstructor(MakeRigaTgBot.class, Settings.class);
             try {
                 Feature f = (Feature)constructor.newInstance(bot, settings);
+                assert !features.containsKey(f.GetId());
                 features.put(f.GetId(), f);
             }
             catch (Throwable t) {

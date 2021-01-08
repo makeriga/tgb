@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
+import java.time.LocalTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,7 +24,7 @@ import org.makeriga.tgbot.features.notifyarrival.ArrivalNotification;
 
 public class OccupantsFeature extends Feature {
 
-    public static final String FEATURE_ID = "awards";
+    public static final String FEATURE_ID = "occupants";
     private static final String CMD_OCCUPATION = "/occupation";
     private File occupantsFile = null;
     private static final Logger logger = Logger.getLogger(OccupantsFeature.class);
@@ -55,29 +56,50 @@ public class OccupantsFeature extends Feature {
         if (!text.startsWith(CMD_OCCUPATION) && !text.startsWith(getWrappedCommand(CMD_OCCUPATION) + " "))
             return false;
         
-        double hoursOffset = 0;
         Integer replyToMessage = isPrivateMessage ? null : messageId;
-        try {
-            String arg = text.substring(text.indexOf(" ") + 1).replace(",", ".").toLowerCase();
-            if ("help".equals(arg)) {
-                sendMessage(chatId, String.format("usage: %s [time offset in hours]", CMD_OCCUPATION) , replyToMessage);
-                return true;
-            }
-            hoursOffset = Double.parseDouble(arg);
-            if (hoursOffset < -0.5 || hoursOffset > 48)
-                throw new Exception();
-        }
-        catch (Exception e) {
-            hoursOffset = 0;
+        String arg = text.substring(text.indexOf(" ") + 1);
+
+        if ("help".equals(arg.toLowerCase())) {
+            sendMessage(chatId, String.format("usage: %s [time offset in hours] | [todays time]", CMD_OCCUPATION) , replyToMessage);
+            return true;
         }
         
-        int minutesCount = (int)(hoursOffset * 60);
-         
-        // calculate reference date
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        c.add(Calendar.MINUTE, minutesCount);
-        long referenceDate = c.getTimeInMillis();
+        long referenceDate;
+        
+        do {
+            Calendar c = Calendar.getInstance();
+            c.setTime(new Date());
+            // parse provided time
+            try {
+                LocalTime t = LocalTime.parse(arg);
+                c.set(Calendar.HOUR_OF_DAY, t.getHour());
+                c.set(Calendar.MINUTE, t.getMinute());
+                referenceDate = c.getTime().getTime();
+                break;
+            }
+            catch (Exception e) {
+                // ignore
+            }
+            
+            double hoursOffset = 0;
+            try {
+                arg = arg.replace(",", ".");
+
+                hoursOffset = Double.parseDouble(arg);
+                if (hoursOffset < -0.5 || hoursOffset > 48)
+                    throw new Exception();
+            }
+            catch (Exception e) {
+                hoursOffset = 0;
+            }
+
+            int minutesCount = (int)(hoursOffset * 60);
+
+            // calculate reference date
+            c.add(Calendar.MINUTE, minutesCount);
+            referenceDate = c.getTimeInMillis();
+        }
+        while (false);
         
         // count occupants
         List<String> occupantsNames = new ArrayList<>();
