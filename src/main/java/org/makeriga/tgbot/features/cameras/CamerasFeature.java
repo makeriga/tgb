@@ -32,10 +32,9 @@ public class CamerasFeature extends Feature {
 
     @Override
         public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
-
         
         // send an image from 3d printers camera
-        if (CMD__PRINTERCAM.equals(text) || text.equals(getWrappedCommand(CMD__PRINTERCAM))) {
+        if (testCommandWithoutArguments(CMD__PRINTERCAM, text)) {
             String requestKey = chatId + "-" + CMD__PRINTERCAM;
             if (!getBot().TestRequestRate(requestKey)) {
                 sendAntispamMessage(chatId, "Try again in a minute", !isPrivateMessage ? messageId : null, CMD__PRINTERCAM, senderId);

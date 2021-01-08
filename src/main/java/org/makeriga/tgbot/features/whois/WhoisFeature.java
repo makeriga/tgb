@@ -26,31 +26,29 @@ public class WhoisFeature extends Feature {
 
     @Override
     public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
-        if (text.startsWith(CMD__WHOIS) || CMD__WHOIS.startsWith(getWrappedCommand(CMD__WHOIS))) {
-            if (!text.contains(" "))
+        if (!testCommandWithArguments(CMD__WHOIS, text))
+            return false;
+        
+        String query = text.substring(text.indexOf(" ")  + 1).toLowerCase();
+        if (query.length() < 1)
+            return true;
+        do {
+            String realName = getBot().getRealName(query);
+            if (realName == null)
+                break;
+            // send nickname
+            sendMessage(chatId, realName, null);
+            File f = MembersHelper.getIconFile(settings, realName, false);
+            if (f == null)
                 return true;
-            String query = text.substring(text.indexOf(" ")  + 1).toLowerCase();
-            if (query.length() < 1)
-                return true;
-            do {
-                String realName = getBot().getRealName(query);
-                if (realName == null)
-                    break;
-                // send nickname
-                sendMessage(chatId, realName, null);
-                File f = MembersHelper.getIconFile(settings, realName, false);
-                if (f == null)
-                    return true;
-                sendSticker(chatId, null, f);
-                return true;
+            sendSticker(chatId, null, f);
+            return true;
 
-             }
-             while (false);
+        }
+        while (false);
 
-             sendMessage(chatId, "I don't know.", null);
-           return true;
-       }
-       return false;
+        sendMessage(chatId, "I don't know.", null);
+        return true;
     }
 
     @Override

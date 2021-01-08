@@ -60,32 +60,31 @@ public class AwardsFeature extends Feature {
     public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
 
         // vote
-        if (text.startsWith(CMD__VOTE + " ") || text.startsWith(getWrappedCommand(CMD__VOTE) + " ")) {
-            if (senderId == null)
-                return false;
-            String voteFor = text.substring(text.indexOf(" ") + 1).trim();
+        if (!testCommandWithArguments(CMD__VOTE, text))
+            return false;
 
-            if ("".equals(voteFor) || voteFor.length() > 70)
-                return true;
+        if (senderId == null)
+            return false;
+        String voteFor = text.substring(text.indexOf(" ") + 1).trim();
 
-            String realName = getBot().getRealName(voteFor);
-            if (realName != null)
-                voteFor = realName;
-
-            synchronized (VOTES_LOCK) {
-                try {
-                    FileUtils.writeStringToFile(currentVotesFile, String.format("(%d) %s\n", senderId, voteFor), Charset.defaultCharset(), true);
-                } catch (Throwable t) {
-                    // log error
-                    logger.error("Failed to register vote", t);
-                    sendMessage(chatId, "Sorry, your vote wasn't counted.", senderId);
-                }
-            }
-
+        if (voteFor.length() > 70)
             return true;
+
+        String realName = getBot().getRealName(voteFor);
+        if (realName != null)
+            voteFor = realName;
+
+        synchronized (VOTES_LOCK) {
+            try {
+                FileUtils.writeStringToFile(currentVotesFile, String.format("(%d) %s\n", senderId, voteFor), Charset.defaultCharset(), true);
+            } catch (Throwable t) {
+                // log error
+                logger.error("Failed to register vote", t);
+                sendMessage(chatId, "Sorry, your vote wasn't counted.", senderId);
+            }
         }
 
-        return false;
+        return true;
     }
 
     private void scheduleNextAwardCeremony() {

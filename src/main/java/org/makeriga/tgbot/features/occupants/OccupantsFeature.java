@@ -49,17 +49,14 @@ public class OccupantsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
-        if (text == null)
-            return false;
-        
-        if (!text.startsWith(CMD_OCCUPATION) && !text.startsWith(getWrappedCommand(CMD_OCCUPATION) + " "))
+    public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {      
+        if (!testCommand(CMD_OCCUPATION, text))
             return false;
         
         Integer replyToMessage = isPrivateMessage ? null : messageId;
-        String arg = text.substring(text.indexOf(" ") + 1);
+        String arg = testCommandWithArguments(CMD_OCCUPATION, text) ? text.substring(text.indexOf(" ") + 1).toLowerCase() : null;
 
-        if ("help".equals(arg.toLowerCase())) {
+        if ("help".equals(arg)) {
             sendMessage(chatId, String.format("usage: %s [time offset in hours] | [todays time]", CMD_OCCUPATION) , replyToMessage);
             return true;
         }
@@ -69,28 +66,31 @@ public class OccupantsFeature extends Feature {
         do {
             Calendar c = Calendar.getInstance();
             c.setTime(new Date());
-            // parse provided time
-            try {
-                LocalTime t = LocalTime.parse(arg);
-                c.set(Calendar.HOUR_OF_DAY, t.getHour());
-                c.set(Calendar.MINUTE, t.getMinute());
-                referenceDate = c.getTime().getTime();
-                break;
-            }
-            catch (Exception e) {
-                // ignore
-            }
             
             double hoursOffset = 0;
-            try {
-                arg = arg.replace(",", ".");
+            if (arg != null) {
+                // parse provided time
+                try {
+                    LocalTime t = LocalTime.parse(arg);
+                    c.set(Calendar.HOUR_OF_DAY, t.getHour());
+                    c.set(Calendar.MINUTE, t.getMinute());
+                    referenceDate = c.getTime().getTime();
+                    break;
+                }
+                catch (Exception e) {
+                    // ignore
+                }
 
-                hoursOffset = Double.parseDouble(arg);
-                if (hoursOffset < -0.5 || hoursOffset > 48)
-                    throw new Exception();
-            }
-            catch (Exception e) {
-                hoursOffset = 0;
+                try {
+                    arg = arg.replace(",", ".");
+
+                    hoursOffset = Double.parseDouble(arg);
+                    if (hoursOffset < -0.5 || hoursOffset > 48)
+                        throw new Exception();
+                }
+                catch (Exception e) {
+                    hoursOffset = 0;
+                }
             }
 
             int minutesCount = (int)(hoursOffset * 60);

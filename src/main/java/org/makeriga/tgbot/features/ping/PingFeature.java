@@ -21,7 +21,7 @@ public class PingFeature extends Feature {
     @Override
     public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         // pong
-        if (CMD__PING.equals(text.toLowerCase())) {
+        if (testCommandWithoutArguments(CMD__PING, text.toLowerCase())) {
             String response = ping(text);
             if (response == null || response.length() > 10)
                 return true;

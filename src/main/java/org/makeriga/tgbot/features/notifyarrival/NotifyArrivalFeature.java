@@ -49,12 +49,12 @@ public class NotifyArrivalFeature extends Feature {
     
     @Override
     public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
-        if (!isPrivateMessage && CMD__NOTIFY_ARRIVAL.equals(text) || text.equals(getWrappedCommand(CMD__NOTIFY_ARRIVAL))) {
+        if (!isPrivateMessage && testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
             sendMessage(chatId, "Private only, please.", messageId);
             return true;
         }        
         
-        if (isPrivateMessage && CMD__NOTIFY_ARRIVAL.equals(text)) {
+        if (isPrivateMessage && testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
             createForm(senderId, senderTitle);
             ProcessArrivalNotification(chatId, senderId, text, senderTitle);
             return true;
@@ -93,7 +93,7 @@ public class NotifyArrivalFeature extends Feature {
                 return true;
             }
             
-            if (CMD__NOTIFY_ARRIVAL.equals(text)) {} 
+            if (testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {} 
             
             // first q
             else if (not.step == ArrivalNotification.STEP__AFTER_HOURS_Q) {

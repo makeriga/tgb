@@ -38,7 +38,7 @@ public class AdminToolsFeature extends Feature {
         text = text.toLowerCase();
         
         // notifies admin about last arrived member
-        if (CMD__LASTUSER.equals(text)) {
+        if (testCommandWithoutArguments(CMD__LASTUSER, text)) {
             if (lastMappedArrived == null && lastArrived == null) {
                 sendMessage(chatId, "None.", null);
                 return true;
@@ -50,12 +50,12 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
 
-        if (CMD__HELP.equals(text)) {
+        if (testCommandWithoutArguments(CMD__HELP, text)) {
             sendMessage(chatId, String.join("\n", CMD__LASTUSER, CMD__AWARDS_RESULTS, CMD__WHOIS, CMD__GENERATE_COMMANDS_DESCRIPTIONS), null);
             return true;
         }
 
-        if (CMD__AWARDS_RESULTS.equals(text)) {
+        if (testCommandWithoutArguments(CMD__AWARDS_RESULTS, text)) {
             AwardsFeature feature = (AwardsFeature)getBot().getFeatures().get(AwardsFeature.FEATURE_ID);
             if (feature == null)
                 return true;
@@ -73,7 +73,7 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
         
-        if (text.startsWith(CMD__WHOIS + " ")) {
+        if (testCommandWithArguments(CMD__WHOIS, text)) {
             String query = text.substring(CMD__WHOIS.length() + 1);
             if (query.length() < 1)
                 return true;
@@ -96,7 +96,7 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
         
-        if (CMD__GENERATE_COMMANDS_DESCRIPTIONS.equals(text)) {
+        if (testCommandWithoutArguments(CMD__GENERATE_COMMANDS_DESCRIPTIONS, text)) {
             List<String> commandsDescriptions = new ArrayList<>();
             for (Feature f : getBot().getFeatures().values())
                 for (Map.Entry<String, String> command : f.getPublicCommands()) {

@@ -64,4 +64,23 @@ public abstract class Feature {
         return command + "@" + settings.getBotUsername();
     }
     
+    protected boolean testCommand(String cmd, String text) {
+        return testCommandWithoutArguments(cmd, text) || testCommandWithArguments(cmd, text);
+    }
+    
+    protected boolean testCommandWithoutArguments(String cmd, String text) {
+        if (cmd == null || text == null)
+            return false;
+        return text.equals(cmd) || text.equals(getWrappedCommand(cmd));
+    }
+    
+    protected boolean testCommandWithArguments(String cmd, String text) {
+        if (cmd == null || text == null)
+            return false;
+        for (String c : new String[] { cmd, getWrappedCommand(cmd)})
+            if (text.startsWith(c + " ") && text.length() > c.length() + 1)
+                return true;
+        return false;
+    }
+    
 }
