@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public abstract class Feature {
@@ -45,7 +46,10 @@ public abstract class Feature {
     }
     
     protected void sendMessage(String chatId, String text, Integer replyTo) {
-        this.bot.SendMessage(chatId, text, replyTo);
+        sendMessage(chatId, text, replyTo, null);
+    }
+    protected void sendMessage(String chatId, String text, Integer replyTo, ReplyKeyboard replyMarkup) {
+        this.bot.SendMessage(chatId, text, replyTo, replyMarkup);
     }
     
     protected void sendPublicMessage(String text) {

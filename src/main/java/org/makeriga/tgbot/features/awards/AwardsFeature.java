@@ -98,25 +98,24 @@ public class AwardsFeature extends Feature {
             if (!votesDirectory.exists() && !votesDirectory.mkdir()) {
                 throw new Exception("Unable to init awards ceremony");
             }
-            final File awardResultFile = new File(votesDirectory, Settings.DF__FILE_NAME.format(awardsDate));
 
             // schedule to next day if already awarded
-            if (awardResultFile.exists()) {
+            if (new File(votesDirectory, Settings.DF__FILE_NAME.format(awardsDate)).exists()) {
                 c.add(Calendar.DAY_OF_YEAR, 1);
             }
             awardsDate = c.getTime();
 
-            if (new Date().after(awardsDate)) {
+            if (new Date().after(awardsDate))
                 awardsDate = new Date();
-            }
+            
+            final File awardResultFile = new File(votesDirectory, Settings.DF__FILE_NAME.format(awardsDate));
 
             // log
-            logger.info("Scheduled awards ceremony to: " + Settings.DTF__TEXT.format(awardsDate));
+            logger.info(String.format("Scheduled to: %s (%s)", Settings.DTF__TEXT.format(awardsDate), awardResultFile.getAbsolutePath()));
 
             TimerTask awardsTask = new TimerTask() {
                 @Override
                 public void run() {
-
                     String winner = null;
                     // log
                     logger.info("Counting votes...");
@@ -150,11 +149,14 @@ public class AwardsFeature extends Feature {
 
     public String runAwards(String chatId, File awardResultFile) throws Exception {
         String winner = null;
+       
         if (awardResultFile.exists()) {
+            logger.info(String.format("%s already awarded", awardResultFile.getAbsolutePath()));
             return null;
         }
         synchronized (VOTES_LOCK) {
             if (!currentVotesFile.exists()) {
+                logger.info(String.format("%s - wotes file doesn't exist", currentVotesFile.getAbsolutePath()));
                 awardResultFile.createNewFile();
                 return null;
             }
@@ -162,6 +164,7 @@ public class AwardsFeature extends Feature {
             // zero votes
             List<String> votes = FileUtils.readLines(currentVotesFile, Charset.defaultCharset());
             if (votes.isEmpty()) {
+                logger.info(String.format("%s was empty", currentVotesFile.getAbsolutePath()));
                 awardResultFile.createNewFile();
                 return null;
             }
@@ -171,22 +174,30 @@ public class AwardsFeature extends Feature {
             Pattern p = Pattern.compile("^\\(([^\\)]+)\\) (.+$)");
             for (String vote : votes) {
                 Matcher m = p.matcher(vote);
-                if (!m.matches())
+                if (!m.matches()) {
+                    logger.info(String.format("%s - invalid line", vote));
                     continue;
+                }
                 userVotes.put(m.group(1) + "-" + m.group(2), m.group(2));
             }
 
-            for (String u : userVotes.values())
+            for (String u : userVotes.values()) {
+                logger.info(String.format("%s - added count", u));
                 counts.put(u, counts.containsKey(u) ? counts.get(u) + 1 : 1);
+            }
 
             // zero valid votes
             if (counts.isEmpty()) {
+                logger.info("nothing counted");
                 awardResultFile.createNewFile();
                 return null;
             }
 
             // announce winner
             winner = Collections.max(counts.entrySet(), Map.Entry.comparingByValue()).getKey();
+            
+            logger.info(String.format("%s - winner", winner));
+            
             sendMessage(chatId, String.format(AWARDS_MESSAGE_FORMAT, winner, winner), null);
 
             // send sticker

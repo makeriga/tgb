@@ -13,11 +13,16 @@ import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.helpers.FeaturesHelper;
 import org.makeriga.tgbot.helpers.MembersHelper;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class MakeRigaTgBot extends TelegramLongPollingBot {
@@ -47,43 +52,51 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        String chatId;
-        String text;
-        Integer senderId = null;
-        String senderTitle = null;
-        Integer messageId;
-        boolean isPrivateMessage;
+        TgbMessage message;
         if (update.getMessage() != null) {
-            chatId = update.getMessage().getChatId().toString();
-            text = update.getMessage().getText();
-            messageId = update.getMessage().getMessageId();
-            isPrivateMessage = "private".equals(update.getMessage().getChat().getType());
+            message = extractMessage(update.getMessage().getText(), update.getMessage(), update.getMessage().getFrom());
+        }
+        else if (update.getCallbackQuery() != null) {
+            message = extractMessage(update.getCallbackQuery().getData(), update.getCallbackQuery().getMessage(), update.getCallbackQuery().getFrom());
+            
+            // answer query
+            AnswerCallbackQuery answer = new AnswerCallbackQuery();
+            try {
+                answer.setShowAlert(false);
+                answer.setCallbackQueryId(update.getCallbackQuery().getId());
+                execute(answer);
+            }
+            catch (TelegramApiException t) {
+                // log error
+                logger.error("A", t);
+            }            
 
-            if (update.getMessage().getFrom() != null) {
-                senderId = update.getMessage().getFrom().getId();
-                senderTitle = update.getMessage().getFrom().getUserName();
-                if (senderTitle == null)
-                    senderTitle = update.getMessage().getFrom().getFirstName();
+            // delete keyboard markup
+            EditMessageReplyMarkup del = new EditMessageReplyMarkup();
+            try {
+                del.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+                del.setChatId(message.getChatId());
+                del.setReplyMarkup(null);
+                execute(del);
+            }
+            catch (TelegramApiException t) {
+                // log error
+                logger.error("C", t);
             }
         }
-//        else if (update.getChannelPost()!= null) {
-//            chatId = update.getChannelPost().getChatId().toString();
-//            text = update.getChannelPost().getText();
-//            replyTo = update.getChannelPost().getMessageId();
-//        }
         else 
             return;
         
-        if (chatId == null || text == null)
+        if (message.getChatId() == null || message.getText() == null)
             return;
         
         // log request
-        if (isPrivateMessage)
-            logger.info(String.format("%s: %s", senderTitle == null ? senderId.toString() : senderTitle, text));
+        if (message.isPrivateMessage())
+            logger.info(String.format("%s: %s", message.getSenderTitle() == null ? message.getSenderId().toString() : message.getSenderTitle(), message.getText()));
         
         for (Feature f : features.values()) {
             try {
-                if (f.Execute(text, isPrivateMessage, senderId, senderTitle, messageId, chatId))
+                if (f.Execute(message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
                     break;
             }
             catch (Throwable t) {
@@ -99,14 +112,15 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     }
     
     public void SendPublicMessage(String text) {
-        SendMessage(settings.getChatId(), text, null);
+        SendMessage(settings.getChatId(), text, null, null);
     }
     
-    public void SendMessage(String chatId, String text, Integer replyTo) {
+    public void SendMessage(String chatId, String text, Integer replyTo, ReplyKeyboard replyMarkup) {
         SendMessage sendMessageRequest = new SendMessage();
         sendMessageRequest.setText(text);
         sendMessageRequest.setChatId(chatId);
         sendMessageRequest.setReplyToMessageId(replyTo);
+        sendMessageRequest.setReplyMarkup(replyMarkup);
 
         try {
             execute(sendMessageRequest);
@@ -119,7 +133,7 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     public void SendAntispamMessage(String chatId, String text, Integer replyTo, String antispamMessagePreffix, Integer senderUserId) {
         if (!settings.getAdminId().equals(senderUserId) && (antispamMessagePreffix == null || !TestRequestRate(antispamMessagePreffix + "-as-" + chatId)))
             return;
-        SendMessage(chatId, text, replyTo);
+        SendMessage(chatId, text, replyTo, null);
     }
     
     public void SendPhoto(String chatId, Integer replyTo, InputStream is, String fileName) throws TelegramApiException {
@@ -180,5 +194,21 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     
     public Map<String, Feature> getFeatures() {
         return features;
+    }
+    
+    private TgbMessage extractMessage(String text, Message message, User user) {
+        TgbMessage m = new TgbMessage();
+        m.setChatId(message.getChatId().toString());
+        m.setText(text);
+        m.setMessageId(message.getMessageId());
+        m.setPrivateMessage("private".equals(message.getChat().getType()));
+
+        if (user != null) {
+            m.setSenderId(user.getId());
+            m.setSenderTitle(user.getUserName());
+            if (m.getSenderTitle() == null)
+                m.setSenderTitle(user.getFirstName());
+        }
+        return m;
     }
 }

@@ -1,6 +1,7 @@
 package org.makeriga.tgbot.features.notifyarrival;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,6 +9,9 @@ import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.occupants.OccupantsFeature;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 public class NotifyArrivalFeature extends Feature {
     
@@ -90,6 +94,7 @@ public class NotifyArrivalFeature extends Feature {
             // abort input
             if (ANSWERS__ABORT.contains(text)) {
                 removeForm(userId);
+                sendMessage(chatId, "Aborted.", null);
                 return true;
             }
             
@@ -179,6 +184,7 @@ public class NotifyArrivalFeature extends Feature {
                         occupantsFeature.RegisterArrival(not.arrivalDate, not.leaveDate, not.extraMembers, senderTitle);
                     
                     removeForm(userId);
+                    sendMessage(chatId, "Sent.", null);
                     return true;
                 } catch (Exception t) {
                     sendMessage(chatId, PARDON__Q, null);
@@ -202,7 +208,7 @@ public class NotifyArrivalFeature extends Feature {
                 break;
             
             case ArrivalNotification.STEP__CONFIRMATION:
-                sendMessage(chatId, "This?\n\n" + not.toString(), null);
+                sendMessage(chatId, "This?\n\n" + not.toString(), null, answersInlineKeyboard());
                 break;
         }
         
@@ -234,6 +240,23 @@ public class NotifyArrivalFeature extends Feature {
             items.remove(userId);
             expireDates.remove(userId);
         } catch (Exception e) { }
+    }
+    
+    private static ReplyKeyboard answersInlineKeyboard() {
+        
+        List<List<InlineKeyboardButton>> buttonsRows = new ArrayList<>();
+        List<InlineKeyboardButton> firstRow = new ArrayList<>();
+        buttonsRows.add(firstRow);
+        String[] titles = new String[] {"Abort", "No", "Yes"};
+        String[] data = new String[] {ANSWERS__ABORT.get(0), ANSWERS__NO.get(0), ANSWERS__YES.get(0)};
+        for (int i = 0; i<=2 ; i++) {
+            InlineKeyboardButton b = new InlineKeyboardButton();
+            b.setText(titles[i]);
+            b.setCallbackData(data[i]);
+            firstRow.add(b);
+        }
+        
+        return new InlineKeyboardMarkup(buttonsRows);
     }
     
     @Override
