@@ -33,7 +33,7 @@ public class MembersHelper {
                     if (alt.equals(allNames[0]))
                         continue;
                     assert !memberAlternativeNames.containsKey(alt);
-                    memberAlternativeNames.put(name.toLowerCase(), allNames[0]);
+                    memberAlternativeNames.put(alt, allNames[0]);
                 }
             }
         }

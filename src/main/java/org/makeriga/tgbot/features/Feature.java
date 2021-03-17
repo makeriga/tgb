@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
+import org.makeriga.tgbot.helpers.TgbHelper;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -87,4 +88,7 @@ public abstract class Feature {
         return false;
     }
     
+    protected String prepareCallbackData(String data) {
+        return TgbHelper.encodeCallbackData(GetId(), data);
+    }
 }

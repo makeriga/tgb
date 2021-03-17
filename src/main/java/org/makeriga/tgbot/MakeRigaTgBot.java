@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.helpers.FeaturesHelper;
 import org.makeriga.tgbot.helpers.MembersHelper;
+import org.makeriga.tgbot.helpers.TgbHelper;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -54,11 +55,12 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         TgbMessage message;
         if (update.getMessage() != null) {
-            message = extractMessage(update.getMessage().getText(), update.getMessage(), update.getMessage().getFrom());
+            message = extractMessage(update.getMessage().getText(), update.getMessage(), update.getMessage().getFrom(), null);
         }
         else if (update.getCallbackQuery() != null) {
-            message = extractMessage(update.getCallbackQuery().getData(), update.getCallbackQuery().getMessage(), update.getCallbackQuery().getFrom());
-            
+            TgbHelper.CallbackData cbd = TgbHelper.decodeCallbackData(update.getCallbackQuery().getData());
+            message = extractMessage(cbd.getData(), update.getCallbackQuery().getMessage(), update.getCallbackQuery().getFrom(), cbd);
+
             // answer query
             AnswerCallbackQuery answer = new AnswerCallbackQuery();
             try {
@@ -94,16 +96,29 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         if (message.isPrivateMessage())
             logger.info(String.format("%s: %s", message.getSenderTitle() == null ? message.getSenderId().toString() : message.getSenderTitle(), message.getText()));
         
-        for (Feature f : features.values()) {
-            try {
-                if (f.Execute(message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
-                    break;
-            }
-            catch (Throwable t) {
-                // log error
-                logger.error(f.GetId() + " failure", t);
-            }
+        // direct send
+        if (message.getCallback() != null && message.getCallback().getFeatureId() != null && features.containsKey(message.getCallback().getFeatureId())) {
+            if (execFeature(features.get(message.getCallback().getFeatureId()), message))
+                return;
         }
+        
+        // global send
+        for (Feature f : features.values()) {
+            if (execFeature(f, message))
+                break;
+        }
+    }
+    
+    private static boolean execFeature(Feature f, TgbMessage message) {
+        try {
+            if (f.Execute(message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
+                return true;
+        }
+        catch (Throwable t) {
+            // log error
+            logger.error(f.GetId() + " failure", t);
+        }
+        return false;
     }
 
     @Override
@@ -196,8 +211,9 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         return features;
     }
     
-    private TgbMessage extractMessage(String text, Message message, User user) {
+    private TgbMessage extractMessage(String text, Message message, User user, TgbHelper.CallbackData cbd) {
         TgbMessage m = new TgbMessage();
+        m.setCallback(cbd);
         m.setChatId(message.getChatId().toString());
         m.setText(text);
         m.setMessageId(message.getMessageId());

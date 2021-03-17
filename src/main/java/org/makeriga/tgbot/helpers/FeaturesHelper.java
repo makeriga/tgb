@@ -24,6 +24,7 @@ public class FeaturesHelper {
             try {
                 Feature f = (Feature)constructor.newInstance(bot, settings);
                 assert !features.containsKey(f.GetId());
+                assert !f.GetId().contains("|");
                 features.put(f.GetId(), f);
             }
             catch (Throwable t) {

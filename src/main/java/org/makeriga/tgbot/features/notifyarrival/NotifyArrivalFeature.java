@@ -242,17 +242,17 @@ public class NotifyArrivalFeature extends Feature {
         } catch (Exception e) { }
     }
     
-    private static ReplyKeyboard answersInlineKeyboard() {
+    private ReplyKeyboard answersInlineKeyboard() {
         
         List<List<InlineKeyboardButton>> buttonsRows = new ArrayList<>();
         List<InlineKeyboardButton> firstRow = new ArrayList<>();
         buttonsRows.add(firstRow);
         String[] titles = new String[] {"Abort", "No", "Yes"};
         String[] data = new String[] {ANSWERS__ABORT.get(0), ANSWERS__NO.get(0), ANSWERS__YES.get(0)};
-        for (int i = 0; i<=2 ; i++) {
+        for (int i = 0; i < 3 ; i++) {
             InlineKeyboardButton b = new InlineKeyboardButton();
             b.setText(titles[i]);
-            b.setCallbackData(data[i]);
+            b.setCallbackData(prepareCallbackData(data[i]));
             firstRow.add(b);
         }
         
