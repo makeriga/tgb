@@ -9,7 +9,8 @@ public class TgbMessage {
     private Integer senderId = null;
     private String senderTitle = null;
     private Integer messageId = null;
-    private boolean isPrivateMessage = false;
+    private boolean privateMessage = false;
+    private boolean bot = false;
     private TgbHelper.CallbackData callback = null;
     
     public String getChatId() {
@@ -52,19 +53,27 @@ public class TgbMessage {
         this.messageId = messageId;
     }
 
-    public boolean isPrivateMessage() {
-        return isPrivateMessage;
-    }
-
-    public void setPrivateMessage(boolean isPrivateMessage) {
-        this.isPrivateMessage = isPrivateMessage;
-    }
-
     public TgbHelper.CallbackData getCallback() {
         return callback;
     }
 
     public void setCallback(TgbHelper.CallbackData callback) {
         this.callback = callback;
+    }
+    
+    public boolean isPrivateMessage() {
+        return privateMessage;
+    }
+    
+    public void setPrivateMessage(boolean privateMessage) {
+        this.privateMessage = privateMessage;
+    }
+    
+    public boolean isBot() {
+        return bot;
+    }
+    
+    public void setBot(boolean bot) {
+        this.bot = bot;
     }
 }

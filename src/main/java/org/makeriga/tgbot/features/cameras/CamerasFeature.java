@@ -31,7 +31,7 @@ public class CamerasFeature extends Feature {
     }
 
     @Override
-        public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+        public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         
         // send an image from 3d printers camera
         if (testCommandWithoutArguments(CMD__PRINTERCAM, text)) {

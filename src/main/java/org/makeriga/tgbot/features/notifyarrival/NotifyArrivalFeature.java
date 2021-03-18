@@ -52,7 +52,7 @@ public class NotifyArrivalFeature extends Feature {
     }
     
     @Override
-    public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         if (!isPrivateMessage && testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
             sendMessage(chatId, "Private only, please.", messageId);
             return true;
@@ -247,12 +247,12 @@ public class NotifyArrivalFeature extends Feature {
         List<List<InlineKeyboardButton>> buttonsRows = new ArrayList<>();
         List<InlineKeyboardButton> firstRow = new ArrayList<>();
         buttonsRows.add(firstRow);
-        String[] titles = new String[] {"Abort", "No", "Yes"};
+        String[] titles = new String[] {"Abort ❌", "No ✏️", "Yes 👍"};
         String[] data = new String[] {ANSWERS__ABORT.get(0), ANSWERS__NO.get(0), ANSWERS__YES.get(0)};
         for (int i = 0; i < 3 ; i++) {
             InlineKeyboardButton b = new InlineKeyboardButton();
             b.setText(titles[i]);
-            b.setCallbackData(prepareCallbackData(data[i]));
+            b.setCallbackData(prepareCallbackData(data[i], true, true));
             firstRow.add(b);
         }
         

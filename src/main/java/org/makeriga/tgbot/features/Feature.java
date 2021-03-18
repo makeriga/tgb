@@ -34,7 +34,7 @@ public abstract class Feature {
         this.settings = settings;
     }
     public abstract String GetId();
-    public abstract boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId);
+    public abstract boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId);
     
     private MakeRigaTgBot bot = null;
     
@@ -89,6 +89,10 @@ public abstract class Feature {
     }
     
     protected String prepareCallbackData(String data) {
-        return TgbHelper.encodeCallbackData(GetId(), data);
+        return TgbHelper.encodeCallbackData(GetId(), data, false, false);
+    }
+    
+    protected String prepareCallbackData(String data, boolean autodeleteMessage, boolean autodeleteInlineKeyboard) {
+        return TgbHelper.encodeCallbackData(GetId(), data, autodeleteMessage, autodeleteInlineKeyboard);
     }
 }

@@ -16,7 +16,7 @@ public class LovingItFeature extends Feature {
     }
 
     @Override
-        public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+        public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         // response to mention - question like messages
         if (text.contains(settings.getBotUsername()) && text.length() > 16 && text.substring(text.length() - 7).contains("?")) {
             if (!getBot().TestRequestRate("bot-q-"+chatId))

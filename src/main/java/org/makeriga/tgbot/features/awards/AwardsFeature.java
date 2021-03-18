@@ -57,7 +57,7 @@ public class AwardsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
 
         // vote
         if (!testCommandWithArguments(CMD__VOTE, text))

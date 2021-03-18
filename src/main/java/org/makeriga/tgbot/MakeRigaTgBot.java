@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -72,18 +73,34 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
                 // log error
                 logger.error("A", t);
             }            
-
-            // delete keyboard markup
-            EditMessageReplyMarkup del = new EditMessageReplyMarkup();
-            try {
-                del.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
-                del.setChatId(message.getChatId());
-                del.setReplyMarkup(null);
-                execute(del);
+            
+            
+            // delete corresponding message
+            if (cbd.isAutodeleteMessage()) {
+                DeleteMessage del = new DeleteMessage();
+                try {
+                    del.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+                    del.setChatId(message.getChatId());
+                    execute(del);
+                }
+                catch (TelegramApiException t) {
+                    // log error
+                    logger.error("C", t);
+                }
             }
-            catch (TelegramApiException t) {
-                // log error
-                logger.error("C", t);
+            // delete inline keyboard markup
+            else if (cbd.isAutodeleteInlineKeyboard()) {
+                EditMessageReplyMarkup del = new EditMessageReplyMarkup();
+                try {
+                    del.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+                    del.setChatId(message.getChatId());
+                    del.setReplyMarkup(null);
+                    execute(del);
+                }
+                catch (TelegramApiException t) {
+                    // log error
+                    logger.error("C", t);
+                }
             }
         }
         else 
@@ -96,22 +113,26 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         if (message.isPrivateMessage())
             logger.info(String.format("%s: %s", message.getSenderTitle() == null ? message.getSenderId().toString() : message.getSenderTitle(), message.getText()));
         
+        // reject bot messages
+        if (message.isBot())
+            return;
+        
         // direct send
         if (message.getCallback() != null && message.getCallback().getFeatureId() != null && features.containsKey(message.getCallback().getFeatureId())) {
-            if (execFeature(features.get(message.getCallback().getFeatureId()), message))
+            if (execFeature(features.get(message.getCallback().getFeatureId()), message, true))
                 return;
         }
         
         // global send
         for (Feature f : features.values()) {
-            if (execFeature(f, message))
+            if (execFeature(f, message, false))
                 break;
         }
     }
     
-    private static boolean execFeature(Feature f, TgbMessage message) {
+    private static boolean execFeature(Feature f, TgbMessage message, boolean isCallback) {
         try {
-            if (f.Execute(message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
+            if (f.Execute(isCallback, message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
                 return true;
         }
         catch (Throwable t) {
@@ -220,6 +241,7 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         m.setPrivateMessage("private".equals(message.getChat().getType()));
 
         if (user != null) {
+            m.setBot(user.getIsBot() != null && user.getIsBot());
             m.setSenderId(user.getId());
             m.setSenderTitle(user.getUserName());
             if (m.getSenderTitle() == null)

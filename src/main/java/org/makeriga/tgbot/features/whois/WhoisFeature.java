@@ -25,7 +25,7 @@ public class WhoisFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         if (!testCommandWithArguments(CMD__WHOIS, text))
             return false;
         
