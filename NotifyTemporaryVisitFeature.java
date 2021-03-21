@@ -41,7 +41,9 @@ public class NotifyTemporaryVisitFeature extends Feature {
         not.arrivalAfterMinutes = 2;
         not.stayMinutes = 5;
         not.memberName = senderTitle;
-        sendMessage(chatId, not.toString(), null);
+        sendMessage(settings.getChatId(), not.toString(), null);
+        if (isPrivateMessage)
+            sendMessage(chatId, "Sent.", null);
                     
         if (occupantsFeature != null)
             occupantsFeature.RegisterArrival(not.arrivalDate, not.leaveDate, not.extraMembers, senderTitle);
