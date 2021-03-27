@@ -69,11 +69,8 @@ public class NotifyArrivalFeature extends Feature {
             return true;
         }
         
-        if (testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
+        if (testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text))
             createForm(senderId, senderTitle);
-            ProcessArrivalNotification(chatId, senderId, text, senderTitle);
-            return true;
-        }
         
         return ProcessArrivalNotification(chatId, senderId, text, senderTitle);
     }
