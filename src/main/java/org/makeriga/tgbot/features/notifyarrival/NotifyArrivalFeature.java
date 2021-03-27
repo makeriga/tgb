@@ -9,6 +9,7 @@ import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.occupants.OccupantsFeature;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -17,9 +18,9 @@ public class NotifyArrivalFeature extends Feature {
     
     public static final String FEATURE_ID = "notifyarrival";
     
-    private static final List<String> ANSWERS__YES = Lists.asList("y", new String[]{"yes", "1", "ja", "jā", "da", "да", "д"});
-    private static final List<String> ANSWERS__NO = Lists.asList("n", new String[]{"no", "0", "ne", "nē", "net", "ņet", "нет", "н"});
-    private static final List<String> ANSWERS__ABORT = Lists.asList("a", new String[]{"abort", "cancel", "atcelt", "otmena", "отмена", "otmenitj", "otmenit", "отменить"});
+    public static final List<String> ANSWERS__YES = Lists.asList("y", new String[]{"yes", "1", "ja", "jā", "da", "да", "д"});
+    public static final List<String> ANSWERS__NO = Lists.asList("n", new String[]{"no", "0", "ne", "nē", "net", "ņet", "нет", "н"});
+    public static final List<String> ANSWERS__ABORT = Lists.asList("a", new String[]{"abort", "cancel", "atcelt", "otmena", "отмена", "otmenitj", "otmenit", "отменить"});
     
     private static final long FORM_EXPIRATION_SECONDS = 120;
     
@@ -52,23 +53,29 @@ public class NotifyArrivalFeature extends Feature {
     }
     
     @Override
-    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         if (!isPrivateMessage && testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
             sendMessage(chatId, "Private only, please.", messageId);
             return true;
-        }        
+        }
         
-        if (isPrivateMessage && testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
+        if (!isPrivateMessage)
+            return false;
+        
+        // test if hasn't sent recently
+        String requestKey = this.getBot().ConstructAntispamMessageRequestKey(CMD__NOTIFY_ARRIVAL, settings.getChatId());
+        if (!this.getBot().TestRequestRate(requestKey, true)) {
+            sendAntispamMessage(chatId, MESSAGE__ANTISPAM_HIT, null, requestKey + "-resp", senderId);
+            return true;
+        }
+        
+        if (testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
             createForm(senderId, senderTitle);
             ProcessArrivalNotification(chatId, senderId, text, senderTitle);
             return true;
         }
         
-        if (isPrivateMessage) {
-            return ProcessArrivalNotification(chatId, senderId, text, senderTitle);
-        }
-        
-        return false;
+        return ProcessArrivalNotification(chatId, senderId, text, senderTitle);
     }
     
     private boolean ProcessArrivalNotification(String chatId, Integer userId, String text, String senderTitle) {
@@ -113,7 +120,7 @@ public class NotifyArrivalFeature extends Feature {
 
                     // Edgars hack
                     if (minutes == MAGIC_MINUTES * 60) {
-                        sendPublicMessage(String.format("%s announces his/her arrival - will arrive \"this evening\". Most likely will come alone.", not.memberName));
+                        sendPublicAntispamMessage(String.format("%s announces his/her arrival - will arrive \"this evening\". Most likely will come alone.", not.memberName), CMD__NOTIFY_ARRIVAL, userId);
                         removeForm(userId);
                         return true;
                     }
@@ -178,7 +185,7 @@ public class NotifyArrivalFeature extends Feature {
                         break;
                     }
                     // send
-                    sendPublicMessage(not.toString());
+                    sendPublicAntispamMessage(not.toString(), CMD__NOTIFY_ARRIVAL, userId);
                     
                     if (occupantsFeature != null)
                         occupantsFeature.RegisterArrival(not.arrivalDate, not.leaveDate, not.extraMembers, senderTitle);

@@ -9,10 +9,13 @@ import java.util.Map;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.helpers.TgbHelper;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public abstract class Feature {
+    
+    protected static final String MESSAGE__ANTISPAM_HIT = "Try again in a minute.";
     
     protected Settings settings = null;
     
@@ -34,7 +37,7 @@ public abstract class Feature {
         this.settings = settings;
     }
     public abstract String GetId();
-    public abstract boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId);
+    public abstract boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId);
     
     private MakeRigaTgBot bot = null;
     
@@ -42,19 +45,32 @@ public abstract class Feature {
         return this.bot;
     }
     
-    protected void sendAntispamMessage(String chatId, String text, Integer replyTo, String antispamPreffix, Integer senderUserId) {
-        this.bot.SendAntispamMessage(chatId, text, replyTo, antispamPreffix, senderUserId);
-    }
-    
     protected void sendMessage(String chatId, String text, Integer replyTo) {
         sendMessage(chatId, text, replyTo, null);
     }
+    
     protected void sendMessage(String chatId, String text, Integer replyTo, ReplyKeyboard replyMarkup) {
         this.bot.SendMessage(chatId, text, replyTo, replyMarkup);
     }
     
+    protected boolean sendAntispamMessage(String chatId, String text, Integer replyTo, String antispamPreffix, Integer senderUserId) {
+        return this.bot.SendAntispamMessage(chatId, text, replyTo, antispamPreffix, senderUserId);
+    }
+    
     protected void sendPublicMessage(String text) {
-        this.bot.SendPublicMessage(text);
+        sendPublicMessage(text, null);
+    }
+    
+    protected void sendPublicMessage(String text, Integer replyTo) {
+        this.bot.SendPublicMessage(text, replyTo);
+    }
+    
+    protected boolean sendPublicAntispamMessage(String text, String preffix, Integer senderId) {
+        return sendPublicAntispamMessage(text, null, preffix, senderId);
+    }
+    
+    protected boolean sendPublicAntispamMessage(String text, Integer replyTo, String preffix, Integer senderId) {
+        return this.sendAntispamMessage(settings.getChatId(), text, replyTo, preffix, senderId);
     }
     
     protected void sendSticker(String chatId, Integer replyTo, File stickerFile) {

@@ -1,6 +1,7 @@
 package org.makeriga.tgbot.features.admintools;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -12,6 +13,7 @@ import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.awards.AwardsFeature;
 import org.makeriga.tgbot.helpers.MembersHelper;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class AdminToolsFeature extends Feature {
     
@@ -22,6 +24,7 @@ public class AdminToolsFeature extends Feature {
     private static final String CMD__AWARDS_RESULTS = "god";
     private static final String CMD__WHOIS = "whois";
     private static final String CMD__GENERATE_COMMANDS_DESCRIPTIONS = "cmddescr";
+    private static final String CMD__VERSION = "version";
     
     private Map.Entry<String, Long> lastArrived = null;
     private Map.Entry<String, Long> lastMappedArrived = null;
@@ -31,9 +34,11 @@ public class AdminToolsFeature extends Feature {
     }
 
     @Override
-        public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         // PRIVATE - ADMIN COMMANDS
         if (!isPrivateMessage || !settings.getAdminId().equals(senderId))
+            return false;
+        if (text == null)
             return false;
         text = text.toLowerCase();
         
@@ -50,11 +55,13 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
 
+        // help text
         if (testCommandWithoutArguments(CMD__HELP, text)) {
             sendMessage(chatId, String.join("\n", CMD__LASTUSER, CMD__AWARDS_RESULTS, CMD__WHOIS, CMD__GENERATE_COMMANDS_DESCRIPTIONS), null);
             return true;
         }
-
+        
+        // current awards winner
         if (testCommandWithoutArguments(CMD__AWARDS_RESULTS, text)) {
             AwardsFeature feature = (AwardsFeature)getBot().getFeatures().get(AwardsFeature.FEATURE_ID);
             if (feature == null)
@@ -73,6 +80,7 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
         
+        // whois command
         if (testCommandWithArguments(CMD__WHOIS, text)) {
             String query = text.substring(CMD__WHOIS.length() + 1);
             if (query.length() < 1)
@@ -96,6 +104,7 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
         
+        // prints out commands description text to paste in botfather's commands description
         if (testCommandWithoutArguments(CMD__GENERATE_COMMANDS_DESCRIPTIONS, text)) {
             List<String> commandsDescriptions = new ArrayList<>();
             for (Feature f : getBot().getFeatures().values())
@@ -109,8 +118,18 @@ public class AdminToolsFeature extends Feature {
             return true;
         }
         
+        // prints version number
+        if (testCommand(CMD__VERSION, text)) {
+            try {
+                sendMessage(chatId, Settings.DTF__TEXT.format(new Date(new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).lastModified())), null);
+            }
+            catch (URISyntaxException t) {
+                sendMessage(chatId, "Pļrr", null);
+            }
+            return true;
+        }
+        
         return false;
-
     }
     
     @Override

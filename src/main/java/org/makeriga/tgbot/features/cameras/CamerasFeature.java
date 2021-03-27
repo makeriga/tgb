@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class CamerasFeature extends Feature {
@@ -31,13 +32,13 @@ public class CamerasFeature extends Feature {
     }
 
     @Override
-        public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
         
         // send an image from 3d printers camera
         if (testCommandWithoutArguments(CMD__PRINTERCAM, text)) {
             String requestKey = chatId + "-" + CMD__PRINTERCAM;
             if (!getBot().TestRequestRate(requestKey)) {
-                sendAntispamMessage(chatId, "Try again in a minute", !isPrivateMessage ? messageId : null, CMD__PRINTERCAM, senderId);
+                sendAntispamMessage(chatId, MESSAGE__ANTISPAM_HIT, !isPrivateMessage ? messageId : null, CMD__PRINTERCAM, senderId);
                 return true;
             }
 

@@ -106,7 +106,7 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         else 
             return;
         
-        if (message.getChatId() == null || message.getText() == null)
+        if (message.getChatId() == null)
             return;
         
         // log request
@@ -119,20 +119,20 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         
         // direct send
         if (message.getCallback() != null && message.getCallback().getFeatureId() != null && features.containsKey(message.getCallback().getFeatureId())) {
-            if (execFeature(features.get(message.getCallback().getFeatureId()), message, true))
+            if (execFeature(features.get(message.getCallback().getFeatureId()), update, message, true))
                 return;
         }
         
         // global send
         for (Feature f : features.values()) {
-            if (execFeature(f, message, false))
+            if (execFeature(f, update, message, false))
                 break;
         }
     }
     
-    private static boolean execFeature(Feature f, TgbMessage message, boolean isCallback) {
+    private static boolean execFeature(Feature f, Update update, TgbMessage message, boolean isCallback) {
         try {
-            if (f.Execute(isCallback, message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
+            if (f.Execute(update, isCallback, message.getText(), message.isPrivateMessage(), message.getSenderId(), message.getSenderTitle(), message.getMessageId(), message.getChatId()))
                 return true;
         }
         catch (Throwable t) {
@@ -146,9 +146,12 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     public String getBotUsername() {
         return settings.getBotUsername();
     }
-    
     public void SendPublicMessage(String text) {
-        SendMessage(settings.getChatId(), text, null, null);
+        SendPublicMessage(text, null);
+    }
+    
+    public void SendPublicMessage(String text, Integer replyTo) {
+        SendMessage(settings.getChatId(), text, replyTo, null);
     }
     
     public void SendMessage(String chatId, String text, Integer replyTo, ReplyKeyboard replyMarkup) {
@@ -166,10 +169,15 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         }
     }    
     
-    public void SendAntispamMessage(String chatId, String text, Integer replyTo, String antispamMessagePreffix, Integer senderUserId) {
-        if (!settings.getAdminId().equals(senderUserId) && (antispamMessagePreffix == null || !TestRequestRate(antispamMessagePreffix + "-as-" + chatId)))
-            return;
+    public boolean SendAntispamMessage(String chatId, String text, Integer replyTo, String antispamMessagePreffix, Integer senderUserId) {
+        if (!settings.getAdminId().equals(senderUserId) && (antispamMessagePreffix == null || !TestRequestRate(ConstructAntispamMessageRequestKey(antispamMessagePreffix, chatId))))
+            return false;
         SendMessage(chatId, text, replyTo, null);
+        return true;
+    }
+    
+    public String ConstructAntispamMessageRequestKey(String antispamMessagePreffix, String chatId) {
+        return antispamMessagePreffix + "-as-" + chatId;
     }
     
     public void SendPhoto(String chatId, Integer replyTo, InputStream is, String fileName) throws TelegramApiException {
@@ -201,11 +209,16 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
     }
     
     public boolean TestRequestRate(String requestKey) {
+        return TestRequestRate(requestKey, false);
+    }
+    
+    public boolean TestRequestRate(String requestKey, boolean readonly) {
         synchronized (requestRates) {
             Date latestTime = requestRates.get(requestKey);
             if (latestTime != null && new Date().getTime() - latestTime.getTime() < 60000 )
                 return false;
-            requestRates.put(requestKey, new Date());
+            if (!readonly)
+                requestRates.put(requestKey, new Date());
             return true;
         }
     }

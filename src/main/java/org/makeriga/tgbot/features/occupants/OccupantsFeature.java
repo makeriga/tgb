@@ -21,6 +21,7 @@ import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.notifyarrival.ArrivalNotification;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class OccupantsFeature extends Feature {
 
@@ -49,7 +50,7 @@ public class OccupantsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {      
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {      
         if (!testCommand(CMD_OCCUPATION, text))
             return false;
         

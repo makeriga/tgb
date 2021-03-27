@@ -21,6 +21,7 @@ import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.lovingit.LovingItFeature;
 import org.makeriga.tgbot.helpers.MembersHelper;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class AwardsFeature extends Feature {
 
@@ -57,7 +58,7 @@ public class AwardsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
 
         // vote
         if (!testCommandWithArguments(CMD__VOTE, text))
