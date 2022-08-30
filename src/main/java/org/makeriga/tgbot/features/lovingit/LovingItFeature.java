@@ -17,7 +17,7 @@ public class LovingItFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {
         if (text == null)
             return false;
         // response to mention - question like messages

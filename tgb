@@ -1,4 +1,0 @@
-#!/bin/bash
-#export JAVA_HOME=/opt/java
-export MAVEN_OPTS="-ea $MAVEN_OPTS"
-pushd . > /dev/null && while true; do mvn clean compile exec:java -Pdev; done && popd > /dev/null

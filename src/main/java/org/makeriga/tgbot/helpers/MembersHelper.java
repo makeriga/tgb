@@ -17,7 +17,7 @@ public class MembersHelper {
     }
     
     public static void ParseMembers(Map<String, String> doorToMemberMappings, Map<String, String> memberAlternativeNames) throws Throwable {
-        String setting = System.getProperty("users_mappings");
+        String setting = System.getenv("users_mappings");
         if (setting == null)
             return;
         

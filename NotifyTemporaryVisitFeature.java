@@ -33,7 +33,7 @@ public class NotifyTemporaryVisitFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {
         if (!testCommand(CMD__NOTIFY_TEMPORARY_ARRIVAL, text))
             return false;
         

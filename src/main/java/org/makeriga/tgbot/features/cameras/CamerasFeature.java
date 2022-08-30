@@ -1,21 +1,23 @@
 package org.makeriga.tgbot.features.cameras;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.Date;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.Date;
 
 public class CamerasFeature extends Feature {
     
     public static final String FEATURE_ID = "cameras";
 
-    private static final Logger logger = Logger.getLogger(CamerasFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(CamerasFeature.class);
     
     private static final String CMD__PRINTERCAM = "/printercam";
     
@@ -32,7 +34,7 @@ public class CamerasFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {
         
         // send an image from 3d printers camera
         if (testCommandWithoutArguments(CMD__PRINTERCAM, text)) {
@@ -50,7 +52,7 @@ public class CamerasFeature extends Feature {
         return false;
     }
     
-    private void sendPic(String chatId, Integer replyTo, String requestKey, String execName, String fileName) {
+    private void sendPic(String chatId, Integer replyToMessageId, String requestKey, String execName, String fileName) {
         try {
             ProcessBuilder builder = new ProcessBuilder();
             builder.command(execName);
@@ -62,12 +64,12 @@ public class CamerasFeature extends Feature {
 
             InputStream is = null;
             try {
-                sendPhoto(chatId, replyTo, is = process.getInputStream(), fileName);
+                sendPhoto(chatId, replyToMessageId, is = process.getInputStream(), fileName);
             }
             catch (TelegramApiException e) {
                 logger.error("TG api error", e);
                 getBot().RemoveRequestRate(requestKey);
-                sendMessage(chatId, "Nevarēja aizsūtīt bildi, jo jāskatās logfaili.", replyTo);
+                sendMessage(chatId, "Nevarēja aizsūtīt bildi, jo jāskatās logfaili.", replyToMessageId);
             }
             finally {
                 IOUtils.closeQuietly(is);
@@ -75,7 +77,7 @@ public class CamerasFeature extends Feature {
         } catch (Throwable t) {
             logger.error("Unable to snap", t);
             getBot().RemoveRequestRate(requestKey);
-            sendMessage(chatId, "Failed to access a camera :(", replyTo);
+            sendMessage(chatId, "Failed to access a camera :(", replyToMessageId);
         }
     }
     

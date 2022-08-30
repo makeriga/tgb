@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  tgb:
+    image: openjdk:18-jdk
+    command: "java -jar /app/dist/tg-bot-1.0-SNAPSHOT.jar"
+    working_dir: "/app"
+    volumes:
+      - ./dist:/app/dist:ro
+      - ./icons:/app/icons:ro
+      - ./stickers:/app/stickers:ro
+      - ./votes:/app/votes
+    env_file:
+      - .env

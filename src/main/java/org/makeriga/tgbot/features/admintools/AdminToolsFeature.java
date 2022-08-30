@@ -34,7 +34,7 @@ public class AdminToolsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {
         // PRIVATE - ADMIN COMMANDS
         if (!isPrivateMessage || !settings.getAdminId().equals(senderId))
             return false;

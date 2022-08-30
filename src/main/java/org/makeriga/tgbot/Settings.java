@@ -72,6 +72,8 @@ public class Settings {
     private String botUsername = null;
     private Integer adminId = 1;
 
+    private String usersMappings;
+
     /**
      * @return the chatId
      */
@@ -85,5 +87,24 @@ public class Settings {
     public void setChatId(String chatId) {
         this.chatId = chatId;
     }
-    
+
+    public String getUsersMappings() {
+        return usersMappings;
+    }
+
+    public void setUsersMappings(String usersMappings) {
+        this.usersMappings = usersMappings;
+    }
+
+    @Override
+    public String toString() {
+        return "Settings{" +
+                "botToken='" + botToken + '\'' +
+                ", chatId='" + chatId + '\'' +
+                ", homeDirectory='" + homeDirectory + '\'' +
+                ", botUsername='" + botUsername + '\'' +
+                ", adminId=" + adminId +
+                ", usersMappings='" + usersMappings + '\'' +
+                '}';
+    }
 }

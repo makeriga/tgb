@@ -4,7 +4,7 @@ public class TgbMessage {
 
     private String chatId;
     private String text;
-    private Integer senderId = null;
+    private Long senderId = null;
     private String senderTitle = null;
     private Integer messageId;
     private boolean isPrivateMessage;
@@ -29,7 +29,7 @@ public class TgbMessage {
         return senderId;
     }
 
-    public void setSenderId(Integer senderId) {
+    public void setSenderId(Long senderId) {
         this.senderId = senderId;
     }
 

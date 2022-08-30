@@ -16,11 +16,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.notifyarrival.ArrivalNotification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class OccupantsFeature extends Feature {
@@ -28,7 +29,7 @@ public class OccupantsFeature extends Feature {
     public static final String FEATURE_ID = "occupants";
     private static final String CMD_OCCUPATION = "/occupation";
     private File occupantsFile = null;
-    private static final Logger logger = Logger.getLogger(OccupantsFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(OccupantsFeature.class);
 
     private final List<Map.Entry<Long, Long>> registeredArrivals = new ArrayList<>();
     private final Map<Map.Entry<Long, Long>, String> arrivalUserTitles = new HashMap<>();
@@ -50,7 +51,7 @@ public class OccupantsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {      
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {      
         if (!testCommand(CMD_OCCUPATION, text))
             return false;
         
@@ -201,4 +202,3 @@ public class OccupantsFeature extends Feature {
         ToFile();
     }
 }
- 

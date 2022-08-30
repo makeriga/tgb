@@ -37,7 +37,7 @@ public abstract class Feature {
         this.settings = settings;
     }
     public abstract String GetId();
-    public abstract boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId);
+    public abstract boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId);
     
     private MakeRigaTgBot bot = null;
     
@@ -45,40 +45,40 @@ public abstract class Feature {
         return this.bot;
     }
     
-    protected void sendMessage(String chatId, String text, Integer replyTo) {
-        sendMessage(chatId, text, replyTo, null);
+    protected void sendMessage(String chatId, String text, Integer replyToMessageId) {
+        sendMessage(chatId, text, replyToMessageId, null);
     }
     
-    protected void sendMessage(String chatId, String text, Integer replyTo, ReplyKeyboard replyMarkup) {
-        this.bot.SendMessage(chatId, text, replyTo, replyMarkup);
+    protected void sendMessage(String chatId, String text, Integer replyToMessageId, ReplyKeyboard replyMarkup) {
+        this.bot.SendMessage(chatId, text, replyToMessageId, replyMarkup);
     }
     
-    protected boolean sendAntispamMessage(String chatId, String text, Integer replyTo, String antispamPreffix, Integer senderUserId) {
-        return this.bot.SendAntispamMessage(chatId, text, replyTo, antispamPreffix, senderUserId);
+    protected boolean sendAntispamMessage(String chatId, String text, Integer replyToMessageId, String antispamPreffix, Long senderUserId) {
+        return this.bot.SendAntispamMessage(chatId, text, replyToMessageId, antispamPreffix, senderUserId);
     }
     
     protected void sendPublicMessage(String text) {
         sendPublicMessage(text, null);
     }
     
-    protected void sendPublicMessage(String text, Integer replyTo) {
-        this.bot.SendPublicMessage(text, replyTo);
+    protected void sendPublicMessage(String text, Integer replyToMessageId) {
+        this.bot.SendPublicMessage(text, replyToMessageId);
     }
     
-    protected boolean sendPublicAntispamMessage(String text, String preffix, Integer senderId) {
+    protected boolean sendPublicAntispamMessage(String text, String preffix, Long senderId) {
         return sendPublicAntispamMessage(text, null, preffix, senderId);
     }
     
-    protected boolean sendPublicAntispamMessage(String text, Integer replyTo, String preffix, Integer senderId) {
-        return this.sendAntispamMessage(settings.getChatId(), text, replyTo, preffix, senderId);
+    protected boolean sendPublicAntispamMessage(String text, Integer replyToMessageId, String preffix, Long senderId) {
+        return this.sendAntispamMessage(settings.getChatId(), text, replyToMessageId, preffix, senderId);
     }
     
-    protected void sendSticker(String chatId, Integer replyTo, File stickerFile) {
-        this.bot.SendSticker(chatId, replyTo, stickerFile);
+    protected void sendSticker(String chatId, Integer replyToMessageId, File stickerFile) {
+        this.bot.SendSticker(chatId, replyToMessageId, stickerFile);
     }
     
-    protected void sendPhoto(String chatId, Integer replyTo, InputStream is, String fileName) throws TelegramApiException {
-        this.bot.SendPhoto(chatId, replyTo, is, fileName);
+    protected void sendPhoto(String chatId, Integer replyToMessageId, InputStream is, String fileName) throws TelegramApiException {
+        this.bot.SendPhoto(chatId, replyToMessageId, is, fileName);
     }
     
     protected String getWrappedCommand(String command) {

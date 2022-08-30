@@ -3,3 +3,8 @@ tgb.log*
 votes/
 features/ping/ping.so
 features/occupants/current
+.env
+dist/
+.gradle/
+.idea/
+build/

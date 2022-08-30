@@ -8,11 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.helpers.FeaturesHelper;
 import org.makeriga.tgbot.helpers.MembersHelper;
 import org.makeriga.tgbot.helpers.TgbHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -29,7 +30,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class MakeRigaTgBot extends TelegramLongPollingBot {
     
-    private static final Logger logger = Logger.getLogger(MakeRigaTgBot.class);
+    private static final Logger logger = LoggerFactory.getLogger(MakeRigaTgBot.class);
     
     private Settings settings = null;
     private final Map<String, Feature> features = new HashMap<>();
@@ -150,15 +151,15 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         SendPublicMessage(text, null);
     }
     
-    public void SendPublicMessage(String text, Integer replyTo) {
-        SendMessage(settings.getChatId(), text, replyTo, null);
+    public void SendPublicMessage(String text, Integer replyToMessageId) {
+        SendMessage(settings.getChatId(), text, replyToMessageId, null);
     }
     
-    public void SendMessage(String chatId, String text, Integer replyTo, ReplyKeyboard replyMarkup) {
+    public void SendMessage(String chatId, String text, Integer replyToMessageId, ReplyKeyboard replyMarkup) {
         SendMessage sendMessageRequest = new SendMessage();
         sendMessageRequest.setText(text);
         sendMessageRequest.setChatId(chatId);
-        sendMessageRequest.setReplyToMessageId(replyTo);
+        sendMessageRequest.setReplyToMessageId(replyToMessageId);
         sendMessageRequest.setReplyMarkup(replyMarkup);
 
         try {
@@ -169,10 +170,10 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         }
     }    
     
-    public boolean SendAntispamMessage(String chatId, String text, Integer replyTo, String antispamMessagePreffix, Integer senderUserId) {
+    public boolean SendAntispamMessage(String chatId, String text, Integer replyToMessageId, String antispamMessagePreffix, Long senderUserId) {
         if (!settings.getAdminId().equals(senderUserId) && (antispamMessagePreffix == null || !TestRequestRate(ConstructAntispamMessageRequestKey(antispamMessagePreffix, chatId))))
             return false;
-        SendMessage(chatId, text, replyTo, null);
+        SendMessage(chatId, text, replyToMessageId, null);
         return true;
     }
     
@@ -180,21 +181,21 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         return antispamMessagePreffix + "-as-" + chatId;
     }
     
-    public void SendPhoto(String chatId, Integer replyTo, InputStream is, String fileName) throws TelegramApiException {
+    public void SendPhoto(String chatId, Integer replyToMessageId, InputStream is, String fileName) throws TelegramApiException {
         SendPhoto p = new SendPhoto();  
         p.setPhoto(new InputFile(is, fileName));
         p.setChatId(chatId);
-        p.setReplyToMessageId(replyTo);
+        p.setReplyToMessageId(replyToMessageId);
         execute(p);
     }
     
-    public void SendSticker(String chatId, Integer replyTo, File stickerFile) {
+    public void SendSticker(String chatId, Integer replyToMessageId, File stickerFile) {
         if (stickerFile == null || !stickerFile.exists())
             return;
         SendSticker sendStickerRequest = new SendSticker();
         InputStream is = null;
         sendStickerRequest.setChatId(chatId);
-        sendStickerRequest.setReplyToMessageId(replyTo);
+        sendStickerRequest.setReplyToMessageId(replyToMessageId);
 
         try {
             sendStickerRequest.setSticker(new InputFile(is = new FileInputStream(stickerFile), stickerFile.getName()));

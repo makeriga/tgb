@@ -32,8 +32,8 @@ public class NotifyArrivalFeature extends Feature {
     
     private static final String PARDON__Q = "Pardon?";
     
-    private final Map<Integer, ArrivalNotification> items = new ConcurrentHashMap<>();
-    private final Map<Integer, Long> expireDates = new ConcurrentHashMap<>();
+    private final Map<Long, ArrivalNotification> items = new ConcurrentHashMap<>();
+    private final Map<Long, Long> expireDates = new ConcurrentHashMap<>();
     
     private OccupantsFeature occupantsFeature = null;
     
@@ -53,7 +53,7 @@ public class NotifyArrivalFeature extends Feature {
     }
     
     @Override
-    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {
         if (!isPrivateMessage && testCommandWithoutArguments(CMD__NOTIFY_ARRIVAL, text)) {
             sendMessage(chatId, "Private only, please.", messageId);
             return true;
@@ -75,7 +75,7 @@ public class NotifyArrivalFeature extends Feature {
         return ProcessArrivalNotification(chatId, senderId, text, senderTitle);
     }
     
-    private boolean ProcessArrivalNotification(String chatId, Integer userId, String text, String senderTitle) {
+    private boolean ProcessArrivalNotification(String chatId, Long userId, String text, String senderTitle) {
         ArrivalNotification not = items.get(userId);
         if (not == null)
             return false;
@@ -219,7 +219,7 @@ public class NotifyArrivalFeature extends Feature {
         return true;
     }
     
-    private void createForm(Integer userId, String userTitle) {
+    private void createForm(Long userId, String userTitle) {
         if (userId == null) {
             return;
         }
@@ -231,7 +231,7 @@ public class NotifyArrivalFeature extends Feature {
         expireDates.put(userId, System.currentTimeMillis() + 60000);
     }
     
-    private void removeForm(Integer userId) {
+    private void removeForm(Long userId) {
         if (userId == null) {
             return;
         }

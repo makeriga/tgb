@@ -15,12 +15,13 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.makeriga.tgbot.MakeRigaTgBot;
 import org.makeriga.tgbot.Settings;
 import org.makeriga.tgbot.features.Feature;
 import org.makeriga.tgbot.features.lovingit.LovingItFeature;
 import org.makeriga.tgbot.helpers.MembersHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class AwardsFeature extends Feature {
@@ -28,7 +29,7 @@ public class AwardsFeature extends Feature {
     public static final String FEATURE_ID = "awards";
     private static final String AWARDS_MESSAGE_FORMAT = "%s, you've served our community and you did it well. God bless you and we love you, %s.";
 
-    private static final Logger logger = Logger.getLogger(AwardsFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(AwardsFeature.class);
 
     private static final String CMD__VOTE = "/vote";
 
@@ -58,7 +59,7 @@ public class AwardsFeature extends Feature {
     }
 
     @Override
-    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Integer senderId, String senderTitle, Integer messageId, String chatId) {
+    public boolean Execute(Update update, boolean isCallback, String text, boolean isPrivateMessage, Long senderId, String senderTitle, Integer messageId, String chatId) {
 
         // vote
         if (!testCommandWithArguments(CMD__VOTE, text))
@@ -81,7 +82,7 @@ public class AwardsFeature extends Feature {
             } catch (Throwable t) {
                 // log error
                 logger.error("Failed to register vote", t);
-                sendMessage(chatId, "Sorry, your vote wasn't counted.", senderId);
+                sendMessage(chatId, "Sorry, your vote wasn't counted.", messageId);
             }
         }
 
