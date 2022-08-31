@@ -76,4 +76,18 @@ public class TgbMessage {
     public void setBot(boolean bot) {
         this.bot = bot;
     }
+
+    @Override
+    public String toString() {
+        return "TgbMessage{" +
+                "chatId='" + chatId + '\'' +
+                ", text='" + text + '\'' +
+                ", senderId=" + senderId +
+                ", senderTitle='" + senderTitle + '\'' +
+                ", messageId=" + messageId +
+                ", privateMessage=" + privateMessage +
+                ", bot=" + bot +
+                ", callback=" + callback +
+                '}';
+    }
 }

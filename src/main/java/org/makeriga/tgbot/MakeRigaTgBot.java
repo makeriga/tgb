@@ -113,6 +113,10 @@ public class MakeRigaTgBot extends TelegramLongPollingBot {
         // log request
         if (message.isPrivateMessage())
             logger.info(String.format("%s: %s", message.getSenderTitle() == null ? message.getSenderId().toString() : message.getSenderTitle(), message.getText()));
+
+        if(logger.isDebugEnabled()){
+            logger.debug("Message received: {}", message);
+        }
         
         // reject bot messages
         if (message.isBot())

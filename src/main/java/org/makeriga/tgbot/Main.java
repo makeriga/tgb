@@ -24,6 +24,8 @@ public class Main {
         }
         settings.setUsersMappings(System.getenv("users_mappings"));
 
+        logger.debug("Running with settings: {}", settings);
+
         try {
             assert settings.getBotToken() != null && settings.getBotUsername() != null && settings.getChatId() != null && settings.getHomeDirectory() != null;
             // init helper
